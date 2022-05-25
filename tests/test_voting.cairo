@@ -5,7 +5,7 @@ from starkware.cairo.common.cairo_builtins import (
 )
 from starkware.cairo.common.alloc import alloc
 
-from src.utils import write_voters
+from src.voting import write_voters, voting_state, voter_info
 
 
 @external
