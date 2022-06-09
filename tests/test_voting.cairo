@@ -8,9 +8,8 @@ from starkware.cairo.common.alloc import alloc
 
 from src.voting import write_voters, voting_state, voter_info, vote
 
-
 @external
-func test_write_voters{
+func __setup__{
     syscall_ptr : felt*,
     pedersen_ptr : HashBuiltin*,
     range_check_ptr,
@@ -23,17 +22,27 @@ func test_write_voters{
 
     write_voters(3, addresses)
 
+    return ()
+end
+
+
+@external
+func test_write_voters{
+    syscall_ptr : felt*,
+    pedersen_ptr : HashBuiltin*,
+    range_check_ptr,
+}():
     let (voter) = voter_info.read(111)
-    assert voter.voter_id = 3
+    assert voter.allowed = 1 
 
     let (voter) = voter_info.read(222)
-    assert voter.voter_id = 2
+    assert voter.allowed = 1
 
     let (voter) = voter_info.read(333)
-    assert voter.voter_id = 1 
+    assert voter.allowed = 1 
 
     let (voter) = voter_info.read(4231421)
-    assert voter.voter_id = 0
+    assert voter.allowed = 0
     return ()
 end
 
@@ -44,11 +53,6 @@ func test_vote_yes_success{
     range_check_ptr,
 }():
     alloc_locals
-    let (local addresses: felt*) = alloc()
-    assert addresses[0] = 111
-
-    write_voters(1, addresses)
-
     %{ stop_prank_callback = start_prank(111) %}
 
     vote(1)
@@ -58,7 +62,7 @@ func test_vote_yes_success{
     assert state.n_yes_votes = 1
 
     let (voter) = voter_info.read(111)
-    assert voter.voter_id = 1
+    assert voter.allowed = 1
     assert voter.voted = 1
     return ()
 end
@@ -71,11 +75,6 @@ func test_vote_no_success{
     range_check_ptr,
 }():
     alloc_locals
-    let (local addresses: felt*) = alloc()
-    assert addresses[0] = 111
-
-    write_voters(1, addresses)
-
     %{ stop_prank_callback = start_prank(111) %}
 
     vote(0)
@@ -85,7 +84,7 @@ func test_vote_no_success{
     assert state.n_yes_votes = 0
 
     let (voter) = voter_info.read(111)
-    assert voter.voter_id = 1
+    assert voter.allowed = 1
     assert voter.voted = 1
     return ()
 end
@@ -97,11 +96,6 @@ func test_vote_no_permissions{
     range_check_ptr,
 }():
     alloc_locals
-    let (local addresses: felt*) = alloc()
-    assert addresses[0] = 111
-
-    write_voters(1, addresses)
-
     %{ stop_prank_callback = start_prank(4231421) %}
     
     %{ expect_revert("TRANSACTION_FAILED", "Address not allowed to vote")%}
@@ -115,12 +109,6 @@ func test_vote_twice_failed{
     pedersen_ptr : HashBuiltin*,
     range_check_ptr,
 }():
-    alloc_locals
-    let (local addresses: felt*) = alloc()
-    assert addresses[0] = 111
-
-    write_voters(1, addresses)
-
     %{ stop_prank_callback = start_prank(111) %}
     vote(0)
 

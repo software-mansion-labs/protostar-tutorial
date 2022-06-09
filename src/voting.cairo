@@ -11,7 +11,7 @@ from starkware.starknet.common.syscalls import get_caller_address
 struct VoterInfo:
     # 1 yes / 0 no
     member voted : felt
-    member voter_id : felt
+    member allowed : felt
 end
 
 struct VotingState:
@@ -43,17 +43,17 @@ func vote{
     let (state) = voting_state.read()
 
     with_attr error_message("Address not allowed to vote."):
-        assert_not_zero(info.voter_id)
+        assert_not_zero(info.allowed)
     end
 
     with_attr error_message("Address already voted."):
         assert info.voted = 0
-    end 
+    end
     
 
     local new_info : VoterInfo
     assert new_info.voted = 1
-    assert new_info.voter_id = info.voter_id
+    assert new_info.allowed = 1
     voter_info.write(caller, new_info)
 
     local new_state : VotingState
@@ -91,7 +91,7 @@ func write_voters{
     
     local info : VoterInfo
     assert info.voted = 0
-    assert info.voter_id = addresses_len
+    assert info.allowed = 1
 
     voter_info.write([addresses], info) 
 
