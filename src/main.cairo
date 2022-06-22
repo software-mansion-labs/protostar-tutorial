@@ -4,10 +4,9 @@ from starkware.cairo.common.cairo_builtins import (
     HashBuiltin,
     SignatureBuiltin,
 )
-from starkware.cairo.common.alloc import alloc
 
-from src.voting import write_voters, voting_state, voter_info, vote
-
+from src.voting import register_voters
+from src.getters import get_state
 
 @constructor
 func constructor{
@@ -16,6 +15,6 @@ func constructor{
     range_check_ptr,
 }(addresses_len: felt, addresses : felt*):
     alloc_locals
-    write_voters(addresses_len, addresses)
+    register_voters(addresses_len, addresses)
     return ()
 end
