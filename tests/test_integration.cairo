@@ -24,7 +24,7 @@ func test_voting{
     alloc_locals
     # Deploy the contract
     local voting_contract_address
-    %{ ids.voting_contract_address = deploy_contract('./src/main.cairo', [3, 111, 222, 333]).contract_address %}
+    %{ ids.voting_contract_address = deploy_contract('./src/main.cairo', {"addresses": [111, 222, 333]}).contract_address %}
 
     # Let everybody vote
     %{ stop_prank_callback = start_prank(111, target_contract_address=ids.voting_contract_address) %}

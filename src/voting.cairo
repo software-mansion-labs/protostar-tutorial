@@ -39,9 +39,36 @@ func register_voters{
     voter_info.write(addresses[addresses_len - 1], v_info)
 
     # Go to the next voter
-    register_voters(addresses_len - 1, addresses)
+    return register_voters(addresses_len - 1, addresses)
+end
+
+
+func assert_allowed_to_vote{
+    syscall_ptr : felt*,
+    pedersen_ptr : HashBuiltin*,
+    range_check_ptr
+}(info : VoterInfo):
+    # We check if caller is allowed to vote
+    with_attr error_message("Address not allowed to vote."):
+        assert_not_zero(info.allowed)
+    end
+
     return ()
 end
+
+
+func assert_did_not_vote{
+    syscall_ptr : felt*,
+    pedersen_ptr : HashBuiltin*,
+    range_check_ptr
+}(info : VoterInfo):
+    # We check if caller hasn't already voted
+    with_attr error_message("Address already voted."):
+        assert info.voted = 0
+    end
+    return ()
+end
+
 
 @external
 func vote{
@@ -53,14 +80,8 @@ func vote{
     let (caller) = get_caller_address()
     let (info) = voter_info.read(caller)
 
-    # We check if caller is allowed to vote
-    with_attr error_message("Address not allowed to vote."):
-        assert_not_zero(info.allowed)
-    end
-    # We check if caller hasn't already voted
-    with_attr error_message("Address already voted."):
-        assert info.voted = 0
-    end
+    assert_allowed_to_vote(info)
+    assert_did_not_vote(info)
 
     # Set voted flag to true
     let new_info = VoterInfo(
