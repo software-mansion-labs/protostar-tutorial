@@ -2,9 +2,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.alloc import alloc
 
-from starkware.starknet.common.syscalls import get_caller_address
-
-from src.voting import register_voters, voter_info, voting_state, vote, VotesCount
+from src.voting import register_voters, voter_info
 
 
 @external
